@@ -1,4 +1,5 @@
 import Cocoa
+import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
@@ -11,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let sevenDayItem = NSMenuItem(title: "Weekly: —", action: nil, keyEquivalent: "")
     private let statusInfoItem = NSMenuItem(title: "Not connected", action: nil, keyEquivalent: "")
     private let loginLogoutItem = NSMenuItem(title: "Connect via Claude Code…", action: #selector(loginOrLogoutTapped), keyEquivalent: "")
+    private let launchAtLoginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -23,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.delegate = self
         loginLogoutItem.target = self
+        launchAtLoginItem.target = self
 
         statusInfoItem.isEnabled = false
         fiveHourItem.isEnabled = false
@@ -38,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshItem.target = self
         menu.addItem(refreshItem)
         menu.addItem(loginLogoutItem)
+        menu.addItem(launchAtLoginItem)
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(title: "Quit", action: #selector(quitTapped), keyEquivalent: "q")
@@ -47,6 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.menu = menu
 
         refreshLoginState()
+        refreshLaunchAtLoginState()
         pollTimer = Timer.scheduledTimer(withTimeInterval: 120, repeats: true) { [weak self] _ in
             self?.fetchUsage()
         }
@@ -57,6 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if lastFetch == nil || Date().timeIntervalSince(lastFetch!) > 30 {
             fetchUsage()
         }
+        refreshLaunchAtLoginState()
     }
 
     private func refreshLoginState() {
@@ -87,6 +93,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func refreshTapped() {
         fetchUsage()
+    }
+
+    private func refreshLaunchAtLoginState() {
+        launchAtLoginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
+    }
+
+    @objc private func toggleLaunchAtLogin() {
+        do {
+            if SMAppService.mainApp.status == .enabled {
+                try SMAppService.mainApp.unregister()
+            } else {
+                try SMAppService.mainApp.register()
+            }
+        } catch {
+            statusInfoItem.title = "Couldn't change Launch at Login"
+        }
+        refreshLaunchAtLoginState()
     }
 
     @objc private func quitTapped() {

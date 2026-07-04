@@ -2,16 +2,24 @@
 # Builds ClaudeUsageMenuBar.app and ad-hoc signs it so macOS Gatekeeper/Keychain
 # treat repeated builds as the same app (needed for stable Keychain access).
 #
-# By default, deletes .build (Swift's compiler cache, ~200MB) after packaging.
-# Pass --keep-cache while iterating on the code to keep it for fast incremental
-# rebuilds, then do a final plain ./build.sh run to clean up once you're done.
+# Flags:
+#   --keep-cache   Keep .build (Swift's compiler cache, ~200MB) for fast
+#                  incremental rebuilds while iterating on the code. Omit for
+#                  a final build to clean it up (default behavior).
+#   --install      Copy the built app to /Applications after packaging, so it
+#                  has a stable path for Login Items and doesn't depend on
+#                  this cloned repo folder sticking around.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 keep_cache=false
-if [[ "${1:-}" == "--keep-cache" ]]; then
-    keep_cache=true
-fi
+install=false
+for arg in "$@"; do
+    case "$arg" in
+        --keep-cache) keep_cache=true ;;
+        --install) install=true ;;
+    esac
+done
 
 APP="ClaudeUsageMenuBar.app"
 
@@ -48,6 +56,15 @@ EOF
 
 codesign --force --deep --sign - "$APP"
 
+if [[ "$install" == true ]]; then
+    echo "Installing to /Applications/$APP..."
+    rm -rf "/Applications/$APP"
+    cp -R "$APP" /Applications/
+    echo "Installed. If Launch at Login was already enabled from a different"
+    echo "copy of this app, toggle it off and back on from the /Applications"
+    echo "copy's menu so macOS registers the new, stable path."
+fi
+
 if [[ "$keep_cache" == true ]]; then
     echo "Keeping .build (--keep-cache) for faster incremental rebuilds."
 else
@@ -55,4 +72,8 @@ else
     rm -rf .build
 fi
 
-echo "Done. Launch with: open $APP"
+if [[ "$install" == true ]]; then
+    echo "Done. Launch with: open /Applications/$APP"
+else
+    echo "Done. Launch with: open $APP"
+fi

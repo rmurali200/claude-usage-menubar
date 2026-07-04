@@ -37,13 +37,19 @@ integration.
 ## Build & run
 
 ```
-./build.sh
-open ClaudeUsageMenuBar.app
+./build.sh --install
+open /Applications/ClaudeUsageMenuBar.app
 ```
+
+`--install` copies the built app into `/Applications`, which you'll want if
+you plan to keep it running long-term (e.g. with Launch at Login enabled) —
+that way it doesn't depend on this cloned repo folder still existing. For a
+one-off test, plain `./build.sh` + `open ClaudeUsageMenuBar.app` works too.
 
 Click the menu bar icon → **Connect via Claude Code…**. macOS will ask for
 permission to read the `Claude Code-credentials` Keychain item — choose
-**Always Allow**.
+**Always Allow**. Optionally, click **Launch at Login** to have it start
+automatically after a reboot.
 
 ## Project structure
 
@@ -73,3 +79,4 @@ Sources/ClaudeUsageMenuBar/
   rebuild (~30-40s). If you're actively iterating on the code, use
   `./build.sh --keep-cache` to keep incremental rebuilds fast, then do one
   final plain `./build.sh` when you're done to clean up.
+- Flags can be combined, e.g. `./build.sh --keep-cache --install`.
