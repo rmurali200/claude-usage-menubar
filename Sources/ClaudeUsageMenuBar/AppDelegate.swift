@@ -52,14 +52,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         refreshLoginState()
         refreshLaunchAtLoginState()
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 120, repeats: true) { [weak self] _ in
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             self?.fetchUsage()
         }
         fetchUsage()
     }
 
     func menuWillOpen(_ menu: NSMenu) {
-        if lastFetch == nil || Date().timeIntervalSince(lastFetch!) > 30 {
+        if lastFetch == nil || Date().timeIntervalSince(lastFetch!) > 60 {
             fetchUsage()
         }
         refreshLaunchAtLoginState()
@@ -88,6 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             fetchUsage()
         } catch {
             statusInfoItem.title = "Couldn't find a Claude Code login on this Mac"
+            Logger.log("importFromClaudeCode failed: \(error)")
         }
     }
 
@@ -122,15 +123,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return
         }
         Task {
+            // Record the attempt time on both success and failure. Otherwise a failed
+            // fetch (e.g. a 429) never updates lastFetch, so the next dropdown open
+            // looks "overdue" and immediately retries — hitting the same rate limit
+            // again on every subsequent open instead of backing off.
+            lastFetch = Date()
             do {
                 let usage = try await UsageAPI.fetch()
-                lastFetch = Date()
                 lastUsage = usage
                 lastError = nil
                 applyUsage(usage)
             } catch {
                 lastError = "\(error)"
-                statusInfoItem.title = "Error fetching usage"
+                statusInfoItem.title = "Error fetching usage (see menu bar log)"
+                Logger.log("fetchUsage failed: \(error)")
             }
         }
     }
