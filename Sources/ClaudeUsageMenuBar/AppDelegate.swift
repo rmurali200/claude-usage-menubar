@@ -140,6 +140,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 lastUsage = usage
                 lastError = nil
                 applyUsage(usage)
+            } catch OAuthError.refreshTokenInvalid {
+                // Likely Claude Code itself rotated the refresh token by refreshing
+                // its own copy first — our copy is now permanently dead, not transient.
+                Logger.log("refresh token invalidated (likely rotated by Claude Code) — disconnecting")
+                OAuthClient.logout()
+                refreshLoginState()
+                statusInfoItem.title = "Reconnect needed — click Connect via Claude Code…"
             } catch {
                 lastError = "\(error)"
                 statusInfoItem.title = "Error fetching usage (see menu bar log)"

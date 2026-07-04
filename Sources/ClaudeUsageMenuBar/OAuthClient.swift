@@ -4,6 +4,13 @@ enum OAuthError: Error {
     case notImported
     case tokenExchangeFailed(String)
     case noRefreshToken
+    /// The refresh token was rejected (e.g. rotated/invalidated by Claude Code
+    /// itself refreshing its own copy first) — needs a fresh reconnect, not a retry.
+    case refreshTokenInvalid
+}
+
+private struct OAuthErrorBody: Decodable {
+    let error: String
 }
 
 struct TokenResponse: Decodable {
@@ -73,6 +80,9 @@ enum OAuthClient {
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            if let errorBody = try? JSONDecoder().decode(OAuthErrorBody.self, from: data), errorBody.error == "invalid_grant" {
+                throw OAuthError.refreshTokenInvalid
+            }
             let text = String(data: data, encoding: .utf8) ?? "unknown error"
             throw OAuthError.tokenExchangeFailed(text)
         }
