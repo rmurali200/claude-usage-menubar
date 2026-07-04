@@ -70,7 +70,10 @@ if [[ "$keep_cache" == true ]]; then
     echo "Keeping .build (--keep-cache) for faster incremental rebuilds."
 else
     echo "Cleaning up build cache (.build)..."
-    rm -rf .build
+    # Non-fatal: an editor's background indexer (SourceKit-LSP) can be actively
+    # regenerating files in .build/index-build at the same moment, which makes
+    # a single rm -rf fail with "Directory not empty". Not worth aborting over.
+    rm -rf .build || rm -rf .build || true
 fi
 
 if [[ "$install" == true ]]; then

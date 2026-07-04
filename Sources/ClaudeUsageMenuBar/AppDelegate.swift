@@ -1,6 +1,11 @@
 import Cocoa
 import ServiceManagement
 
+// Task { } bodies started here inherit this actor, so UI updates after an `await`
+// (e.g. the network call in fetchUsage()) reliably resume on the main thread.
+// Without this, mutating NSMenuItem.title from a background thread can crash
+// AppKit's window-management code if it happens while the menu is open.
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var pollTimer: Timer?
@@ -53,7 +58,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshLoginState()
         refreshLaunchAtLoginState()
         pollTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
-            self?.fetchUsage()
+            Task { @MainActor in
+                self?.fetchUsage()
+            }
         }
         fetchUsage()
     }
