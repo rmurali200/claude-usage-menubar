@@ -64,6 +64,7 @@ Sources/ClaudeUsageMenuBar/
   OAuthClient.swift                  Imports + refreshes the OAuth token
   KeychainStore.swift                Reads/writes tokens in the macOS Keychain
   UsageAPI.swift                     Calls the usage endpoint, decodes the response
+  Resources/fallback_icon.png        Menu bar icon used when Claude Desktop isn't installed
 ```
 
 ## Notes
@@ -71,9 +72,10 @@ Sources/ClaudeUsageMenuBar/
 - The app stores its own copy of the token in your Keychain
   (`com.github.claude-usage-menubar`) and refreshes it independently after
   the initial import; it doesn't keep re-reading Claude Code's entry.
-- No custom app icon is bundled (Anthropic's logo isn't ours to redistribute).
-  If Claude Desktop is installed locally, its icon is borrowed at runtime;
-  otherwise a generic system symbol is used.
+- Anthropic's logo isn't ours to redistribute, so it's never bundled — if
+  Claude Desktop is installed locally, its icon is borrowed at runtime.
+  Otherwise, the menu bar falls back to this repo's own bundled icon
+  (`Resources/fallback_icon.png`), or a generic system symbol as a last resort.
 - `build.sh` deletes `.build/` (Swift's compiler cache, ~200MB) after
   packaging by default, so a plain `./build.sh` run always does a full
   rebuild (~30-40s). If you're actively iterating on the code, use

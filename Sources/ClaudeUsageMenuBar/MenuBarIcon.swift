@@ -2,7 +2,7 @@ import Cocoa
 
 /// We don't bundle Anthropic's logo in this repo (it's their trademark, not ours to
 /// redistribute). Instead, if the user has Claude Desktop installed locally, we borrow
-/// its icon at runtime; otherwise we fall back to a generic system symbol.
+/// its icon at runtime; otherwise we fall back to this repo's own bundled icon.
 enum MenuBarIcon {
     static func load() -> NSImage? {
         let candidatePaths = [
@@ -15,8 +15,12 @@ enum MenuBarIcon {
                 return image
             }
         }
-        let fallback = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Claude usage")
-        fallback?.size = NSSize(width: 16, height: 16)
-        return fallback
+        if let fallback = Bundle.module.image(forResource: "fallback_icon") {
+            fallback.size = NSSize(width: 18, height: 18)
+            return fallback
+        }
+        let symbol = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Claude usage")
+        symbol?.size = NSSize(width: 16, height: 16)
+        return symbol
     }
 }

@@ -30,6 +30,8 @@ echo "Packaging $APP..."
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp .build/release/ClaudeUsageMenuBar "$APP/Contents/MacOS/ClaudeUsageMenuBar"
+rm -rf "$APP/Contents/MacOS/ClaudeUsageMenuBar_ClaudeUsageMenuBar.bundle"
+cp -R .build/release/ClaudeUsageMenuBar_ClaudeUsageMenuBar.bundle "$APP/Contents/MacOS/"
 
 cat > "$APP/Contents/Info.plist" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
