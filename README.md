@@ -37,6 +37,8 @@ integration.
 ## Build & run
 
 ```
+git clone https://github.com/rmurali200/claude-usage-menubar.git
+cd claude-usage-menubar
 ./build.sh --install
 open /Applications/ClaudeUsageMenuBar.app
 ```
@@ -50,6 +52,30 @@ Click the menu bar icon → **Connect via Claude Code…**. macOS will ask for
 permission to read the `Claude Code-credentials` Keychain item — choose
 **Always Allow**. Optionally, click **Launch at Login** to have it start
 automatically after a reboot.
+
+## Using it
+
+Once connected, the menu bar shows your 5-hour usage percentage next to the
+icon at all times. Click it to see a dropdown with both the 5-hour and
+weekly percentages, each with a "resets in" time, plus **Refresh Now**,
+**Disconnect**, and **Quit**.
+
+## Troubleshooting
+
+- **"Reconnect needed"** — the stored token was invalidated, most likely
+  because Claude Code refreshed its own login first (Anthropic's OAuth
+  server appears to invalidate the previous token whenever either side
+  refreshes). Just click **Connect via Claude Code…** again.
+- Errors are logged to `~/Library/Logs/ClaudeUsageMenuBar.log` — check there
+  first if something looks wrong and the menu bar message isn't enough detail.
+
+## Uninstalling
+
+- If **Launch at Login** is on, click it again in the menu to turn it off
+  first (deleting the app without doing this can leave a stale entry in
+  System Settings → General → Login Items).
+- Click **Disconnect**, then **Quit**.
+- Delete `/Applications/ClaudeUsageMenuBar.app`.
 
 ## Project structure
 
