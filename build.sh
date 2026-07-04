@@ -28,10 +28,9 @@ swift build -c release
 
 echo "Packaging $APP..."
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp .build/release/ClaudeUsageMenuBar "$APP/Contents/MacOS/ClaudeUsageMenuBar"
-rm -rf "$APP/Contents/MacOS/ClaudeUsageMenuBar_ClaudeUsageMenuBar.bundle"
-cp -R .build/release/ClaudeUsageMenuBar_ClaudeUsageMenuBar.bundle "$APP/Contents/MacOS/"
+cp Sources/ClaudeUsageMenuBar/Resources/fallback_icon.png "$APP/Contents/Resources/fallback_icon.png"
 
 cat > "$APP/Contents/Info.plist" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>

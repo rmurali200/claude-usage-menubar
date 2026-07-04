@@ -15,7 +15,8 @@ enum MenuBarIcon {
                 return image
             }
         }
-        if let fallback = Bundle.module.image(forResource: "fallback_icon") {
+        if let fallbackURL = Bundle.main.url(forResource: "fallback_icon", withExtension: "png"),
+           let fallback = NSImage(contentsOf: fallbackURL) {
             fallback.size = NSSize(width: 18, height: 18)
             return fallback
         }
