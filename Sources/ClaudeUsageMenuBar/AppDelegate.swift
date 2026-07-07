@@ -162,17 +162,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let five = usage.fiveHour {
             let pct = Int(five.utilization.rounded())
             barText = "\(pct)%"
-            fiveHourItem.title = "5-hour: \(pct)% used — resets \(Self.relativeTime(five.resetsAt))"
+            fiveHourItem.title = "5-hour: \(pct)% used" + Self.resetSuffix(five.resetsAt)
         } else {
             fiveHourItem.title = "5-hour: no data"
         }
         if let week = usage.sevenDay {
             let pct = Int(week.utilization.rounded())
-            sevenDayItem.title = "Weekly: \(pct)% used — resets \(Self.relativeTime(week.resetsAt))"
+            sevenDayItem.title = "Weekly: \(pct)% used" + Self.resetSuffix(week.resetsAt)
         } else {
             sevenDayItem.title = "Weekly: no data"
         }
         statusItem.button?.title = " " + barText
+    }
+
+    private static func resetSuffix(_ date: Date?) -> String {
+        guard let date else { return "" }
+        return " — resets \(relativeTime(date))"
     }
 
     private static func relativeTime(_ date: Date) -> String {

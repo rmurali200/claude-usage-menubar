@@ -2,7 +2,9 @@ import Foundation
 
 struct UsageWindow: Decodable {
     let utilization: Double
-    let resetsAt: Date
+    // Some plans (e.g. accounts without a rolling 5-hour limit) report this window
+    // with no scheduled reset, so the API sends `resets_at: null`.
+    let resetsAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case utilization
@@ -12,7 +14,10 @@ struct UsageWindow: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         utilization = try container.decode(Double.self, forKey: .utilization)
-        let dateString = try container.decode(String.self, forKey: .resetsAt)
+        guard let dateString = try container.decodeIfPresent(String.self, forKey: .resetsAt) else {
+            resetsAt = nil
+            return
+        }
         guard let date = ISO8601DateFormatter.withFractionalSeconds.date(from: dateString)
             ?? ISO8601DateFormatter().date(from: dateString) else {
             throw DecodingError.dataCorruptedError(forKey: .resetsAt, in: container, debugDescription: "Unrecognized date format: \(dateString)")
